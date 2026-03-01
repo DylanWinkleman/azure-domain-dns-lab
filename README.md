@@ -1,0 +1,2 @@
+# azure-domain-dns-lab
+
