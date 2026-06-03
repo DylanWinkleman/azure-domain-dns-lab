@@ -1,8 +1,999 @@
 <!doctype html>
-<html>
-  <head><meta charset="utf-8" /><title>Azure DNS Lab</title></head>
-  <body>
-    <h1>Azure DNS + GitHub Auto Deploy</h1>
-    <p> Deployed from static webb app.</p>
-  </body>
-</html> 
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dylan Winkleman — Aspiring Cloud Engineer</title>
+  <meta name="description" content="Dylan Winkleman — aspiring cloud engineer with hands-on Microsoft Azure experience across VMs, networking, DNS, storage, identity, monitoring, backup, and GitHub Actions. Azure Fundamentals (AZ-900) certified, AZ-104 in progress." />
+  <meta name="author" content="Dylan Winkleman" />
+  <meta name="theme-color" content="#0a1930" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="canonical" href="https://dylancloudlab.net/" />
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Dylan Winkleman — Aspiring Cloud Engineer" />
+  <meta property="og:description" content="Hands-on Microsoft Azure portfolio: VMs, networking, DNS, storage, identity/governance, monitoring, backup, and CI/CD with GitHub Actions." />
+  <meta property="og:url" content="https://dylancloudlab.net/" />
+
+  <style>
+    /* ---------- Design tokens ---------- */
+    :root {
+      --azure: #0078D4;
+      --azure-light: #2b95e9;
+      --cyan: #22d3ee;
+      --bg: #0a1930;
+      --bg-2: #0d2140;
+      --card: #102a4f;
+      --card-2: #143559;
+      --surface: #112c54;
+      --border: rgba(126, 178, 235, 0.18);
+      --border-strong: rgba(126, 178, 235, 0.35);
+      --text: #eaf2fb;
+      --muted: #a9c0db;
+      --muted-2: #88a2c2;
+      --ring: rgba(34, 211, 238, 0.55);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.25);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --maxw: 1080px;
+      --nav-h: 60px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--cyan); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    :focus-visible {
+      outline: 3px solid var(--ring);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    img, svg { max-width: 100%; height: auto; }
+
+    /* ---------- Skip link ---------- */
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      background: var(--cyan);
+      color: #04263a;
+      padding: 10px 16px;
+      border-radius: 0 0 10px 0;
+      font-weight: 700;
+      z-index: 200;
+    }
+    .skip-link:focus {
+      left: 0;
+      text-decoration: none;
+    }
+
+    /* ---------- Layout helpers ---------- */
+    .wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+
+    section { padding: 64px 0; scroll-margin-top: calc(var(--nav-h) + 16px); }
+    section:nth-of-type(even) { background: var(--bg-2); }
+
+    .section-head { margin: 0 0 28px; }
+    .section-head h2 {
+      font-size: clamp(1.45rem, 1rem + 1.8vw, 2rem);
+      margin: 0 0 8px;
+      letter-spacing: -0.01em;
+    }
+    .section-head .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--cyan);
+      margin: 0 0 10px;
+    }
+    .section-head .eyebrow::before {
+      content: "";
+      width: 26px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--azure), var(--cyan));
+      border-radius: 2px;
+    }
+    .section-head p.lead { color: var(--muted); margin: 0; max-width: 70ch; }
+
+    /* ---------- Sticky nav ---------- */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--nav-h);
+      background: rgba(10, 25, 48, 0.82);
+      backdrop-filter: saturate(140%) blur(10px);
+      -webkit-backdrop-filter: saturate(140%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav .wrap {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .brand:hover { text-decoration: none; }
+    .brand .logo {
+      width: 30px; height: 30px; border-radius: 8px; display: block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .brand .brand-text { font-size: 1rem; }
+
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: color 0.18s ease, background-color 0.18s ease;
+    }
+    .nav-links a:hover { color: var(--text); background: rgba(126,178,235,0.10); text-decoration: none; }
+    .nav-links a.active { color: #fff; background: rgba(34,211,238,0.14); }
+
+    .nav-toggle {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      width: 42px; height: 38px;
+      border-radius: 10px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+    .nav-toggle svg { width: 22px; height: 22px; display: block; }
+
+    /* ---------- Buttons & links ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 11px 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn svg { width: 18px; height: 18px; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--azure), var(--azure-light));
+      color: #fff;
+      box-shadow: 0 8px 22px rgba(0, 120, 212, 0.35);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,120,212,0.45); text-decoration: none; }
+    .btn-ghost {
+      background: rgba(126,178,235,0.06);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    .btn-ghost:hover { transform: translateY(-2px); border-color: var(--cyan); color: #fff; text-decoration: none; }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      position: relative;
+      padding: clamp(56px, 7vw, 104px) 0 clamp(48px, 6vw, 88px);
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(1100px 520px at 18% -8%, rgba(0,120,212,0.30), transparent 60%),
+        radial-gradient(900px 520px at 92% 6%, rgba(34,211,238,0.18), transparent 58%),
+        linear-gradient(180deg, var(--bg-2), var(--bg));
+    }
+    .hero::after {
+      /* subtle grid texture */
+      content: "";
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(126,178,235,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(126,178,235,0.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at 50% 20%, #000 0%, transparent 72%);
+      -webkit-mask-image: radial-gradient(circle at 50% 20%, #000 0%, transparent 72%);
+      pointer-events: none;
+    }
+    .hero .wrap { position: relative; z-index: 1; }
+
+    /* ===== animated cloud scene (decorative, behind text) ===== */
+    .cloud-defs { position: absolute; }
+    .hero-sky { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .cloud {
+      position: absolute; height: auto; opacity: 0.45;
+      filter: drop-shadow(0 6px 26px rgba(34, 211, 238, 0.30));
+      will-change: transform;
+    }
+    .cloud-feature { width: 210px; top: 7%; right: 6%; left: auto; opacity: 0.6; animation: cloudFloat 8s ease-in-out infinite; }
+    .cloud-1 { width: 230px; top: 12%; left: -260px; opacity: 0.40; animation: drift 52s linear infinite; }
+    .cloud-2 { width: 150px; top: 30%; left: -200px; opacity: 0.28; animation: drift 78s linear infinite; animation-delay: -22s; }
+    .cloud-3 { width: 300px; top: 3%;  left: -340px; opacity: 0.20; animation: drift 104s linear infinite; animation-delay: -55s; }
+
+    @keyframes drift { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 360px)); } }
+    @keyframes cloudFloat {
+      0%, 100% { transform: translateY(0) scale(1);        filter: drop-shadow(0 6px 26px rgba(34, 211, 238, 0.30)); }
+      50%      { transform: translateY(-14px) scale(1.03); filter: drop-shadow(0 12px 40px rgba(34, 211, 238, 0.55)); }
+    }
+
+    /* rising "data uplink" particles toward the feature cloud */
+    .up-particle {
+      position: absolute; bottom: 32%; width: 5px; height: 5px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 10px var(--cyan); opacity: 0;
+      animation: uplink 6s ease-in infinite; will-change: transform, opacity;
+    }
+    @keyframes uplink {
+      0%   { transform: translateY(70px) scale(1);    opacity: 0; }
+      15%  { opacity: 0.9; }
+      100% { transform: translateY(-160px) scale(0.3); opacity: 0; }
+    }
+
+    @media (max-width: 760px) {
+      .cloud-feature { width: 140px; top: 4%; right: 2%; opacity: 0.4; }
+      .cloud-3 { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cloud { animation: none; }
+      .up-particle { display: none; }
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(34,211,238,0.10);
+      border: 1px solid var(--border-strong);
+      color: var(--cyan);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 6px 13px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+    .badge .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 0 4px rgba(34,211,238,0.18);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.1rem, 1.2rem + 4.4vw, 3.6rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    .hero .headline {
+      font-size: clamp(1.1rem, 0.9rem + 1.2vw, 1.5rem);
+      font-weight: 700;
+      margin: 0 0 14px;
+      background: linear-gradient(90deg, var(--cyan), var(--azure-light));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero .tagline {
+      color: var(--muted);
+      font-size: clamp(1rem, 0.95rem + 0.4vw, 1.15rem);
+      max-width: 64ch;
+      margin: 0 0 26px;
+    }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+
+    /* ---------- Cards / grids ---------- */
+    .grid { display: grid; gap: 18px; }
+    .skills-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .projects-grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .cert-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+    .card {
+      background: linear-gradient(180deg, var(--card), var(--card-2));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.18s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--border-strong); }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 1.08rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card h3 .ico {
+      flex: 0 0 auto;
+      width: 34px; height: 34px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 9px;
+      background: rgba(0,120,212,0.16);
+      color: var(--cyan);
+      border: 1px solid var(--border);
+    }
+    .card h3 .ico svg { width: 18px; height: 18px; }
+
+    /* skill chips */
+    .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .chips li {
+      font-size: 0.85rem;
+      color: var(--text);
+      background: rgba(126,178,235,0.08);
+      border: 1px solid var(--border);
+      padding: 5px 11px;
+      border-radius: 999px;
+      line-height: 1.3;
+    }
+
+    /* ---------- Certifications ---------- */
+    .cert {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .cert .seal {
+      flex: 0 0 auto;
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--azure), var(--cyan));
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(0,120,212,0.35);
+    }
+    .cert .seal svg { width: 24px; height: 24px; }
+    .cert h3 { margin: 2px 0 6px; font-size: 1.02rem; }
+    .cert p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .status {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .status.done { background: rgba(34,211,238,0.16); color: var(--cyan); border: 1px solid var(--border-strong); }
+    .status.prog { background: rgba(255,184,0,0.14); color: #ffce5a; border: 1px solid rgba(255,206,90,0.4); }
+
+    /* ---------- Projects ---------- */
+    .project { display: flex; flex-direction: column; }
+    .project .tag {
+      align-self: flex-start;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      background: rgba(34,211,238,0.10);
+      border: 1px solid var(--border);
+      padding: 4px 9px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    .project .tag.live { color: #7ef0c0; background: rgba(46,213,150,0.12); border-color: rgba(46,213,150,0.4); }
+    .project h3 { font-size: 1.1rem; margin: 0 0 10px; }
+    .project ul { margin: 0 0 16px; padding-left: 18px; color: var(--muted); }
+    .project ul li { margin: 0 0 7px; }
+    .project ul li::marker { color: var(--azure-light); }
+    .project .links { margin-top: auto; display: flex; flex-wrap: wrap; gap: 10px; }
+    .repo-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 0.88rem; font-weight: 600;
+      color: var(--text);
+      background: rgba(126,178,235,0.06);
+      border: 1px solid var(--border-strong);
+      padding: 7px 12px;
+      border-radius: 999px;
+      transition: border-color 0.18s ease, color 0.18s ease, background-color 0.18s ease;
+    }
+    .repo-link:hover { color: #fff; border-color: var(--cyan); background: rgba(34,211,238,0.10); text-decoration: none; }
+    .repo-link svg { width: 16px; height: 16px; }
+
+    /* ---------- Timeline (experience) ---------- */
+    .timeline { position: relative; margin: 0; padding: 0; list-style: none; }
+    .timeline > li {
+      position: relative;
+      padding: 0 0 26px 30px;
+      border-left: 2px solid var(--border-strong);
+    }
+    .timeline > li:last-child { padding-bottom: 0; border-left-color: transparent; }
+    .timeline > li::before {
+      content: "";
+      position: absolute;
+      left: -8px; top: 4px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 3px solid var(--cyan);
+      box-shadow: 0 0 0 4px rgba(34,211,238,0.12);
+    }
+    .job-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 4px; }
+    .job-head h3 { margin: 0; font-size: 1.08rem; }
+    .job-head .role { color: var(--cyan); font-weight: 700; }
+    .job-meta { color: var(--muted-2); font-size: 0.86rem; margin: 0 0 10px; }
+    .job-meta .sep { opacity: 0.5; margin: 0 8px; }
+    .timeline ul.bullets { margin: 0; padding-left: 18px; color: var(--muted); }
+    .timeline ul.bullets li { margin: 0 0 7px; }
+    .timeline ul.bullets li::marker { color: var(--azure-light); }
+
+    /* ---------- Education ---------- */
+    .edu-card { display: flex; gap: 16px; align-items: flex-start; }
+    .edu-card .seal {
+      flex: 0 0 auto; width: 46px; height: 46px; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(0,120,212,0.16); color: var(--cyan); border: 1px solid var(--border);
+    }
+    .edu-card .seal svg { width: 24px; height: 24px; }
+    .edu-card h3 { margin: 2px 0 4px; font-size: 1.05rem; }
+    .edu-card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+
+    /* ---------- Footer ---------- */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg-2);
+      padding: 40px 0 48px;
+    }
+    .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .footer-links a {
+      display: inline-flex; align-items: center; gap: 7px;
+      color: var(--muted); font-weight: 600; font-size: 0.9rem;
+      padding: 8px 12px; border-radius: 999px;
+      border: 1px solid var(--border);
+      transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+    }
+    .footer-links a:hover { color: #fff; border-color: var(--cyan); background: rgba(34,211,238,0.08); text-decoration: none; }
+    .footer-links svg { width: 16px; height: 16px; }
+    .copyright { color: var(--muted-2); font-size: 0.85rem; margin: 0; }
+    .copyright a { color: var(--muted); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 760px) {
+      .nav-toggle { display: inline-flex; }
+      .nav-links {
+        position: absolute;
+        top: var(--nav-h);
+        left: 0; right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+        background: rgba(10, 25, 48, 0.98);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+        padding: 10px 16px 16px;
+        box-shadow: var(--shadow);
+        display: none;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { padding: 11px 12px; font-size: 1rem; }
+    }
+
+    @media (max-width: 420px) {
+      .wrap { padding: 0 16px; }
+      section { padding: 48px 0; }
+      .hero-actions .btn { flex: 1 1 auto; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- ============ NAV ============ -->
+  <header class="nav" role="banner">
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="Dylan Winkleman — home">
+        <img class="logo" src="./favicon.svg" alt="" width="30" height="30" />
+        <span class="brand-text">Dylan Winkleman</span>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navLinks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <nav class="nav-links" id="navLinks" aria-label="Primary">
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="#certifications">Certifications</a>
+        <a href="#projects">Projects</a>
+        <a href="#experience">Experience</a>
+        <a href="#education">Education</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <span id="top"></span>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero" aria-labelledby="hero-name">
+      <!-- fancy animated cloud scene (decorative) -->
+      <svg width="0" height="0" class="cloud-defs" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="cloudGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#cdeeff"/>
+            <stop offset="0.55" stop-color="#22d3ee"/>
+            <stop offset="1" stop-color="#0078d4"/>
+          </linearGradient>
+          <symbol id="cloudShape" viewBox="0 0 220 120">
+            <g fill="url(#cloudGrad)">
+              <circle cx="70" cy="68" r="34"/>
+              <circle cx="112" cy="50" r="44"/>
+              <circle cx="156" cy="70" r="32"/>
+              <rect x="58" y="74" width="120" height="42" rx="21"/>
+            </g>
+          </symbol>
+        </defs>
+      </svg>
+      <div class="hero-sky" aria-hidden="true">
+        <svg class="cloud cloud-feature"><use href="#cloudShape"/></svg>
+        <svg class="cloud cloud-1"><use href="#cloudShape"/></svg>
+        <svg class="cloud cloud-2"><use href="#cloudShape"/></svg>
+        <svg class="cloud cloud-3"><use href="#cloudShape"/></svg>
+        <span class="up-particle" style="left:62%; animation-delay:0s"></span>
+        <span class="up-particle" style="left:70%; animation-delay:1.6s"></span>
+        <span class="up-particle" style="left:78%; animation-delay:3.1s"></span>
+        <span class="up-particle" style="left:66%; animation-delay:4.4s"></span>
+        <span class="up-particle" style="left:74%; animation-delay:2.3s"></span>
+        <span class="up-particle" style="left:82%; animation-delay:5.2s"></span>
+      </div>
+      <div class="wrap">
+        <span class="badge"><span class="dot" aria-hidden="true"></span> Open to cloud &amp; technical support roles</span>
+        <h1 id="hero-name">Dylan Winkleman</h1>
+        <p class="headline">Aspiring Cloud Engineer</p>
+        <p class="tagline">
+          Customer-focused technical professional building a hands-on Microsoft Azure portfolio —
+          virtual machines, networking, DNS, storage, identity &amp; governance, monitoring, backup, and CI/CD with GitHub Actions.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="./Dylan-Winkleman-Resume.pdf" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>
+            </svg>
+            Download résumé
+          </a>
+          <a class="btn btn-ghost" href="mailto:winklemandylan09@gmail.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>
+            </svg>
+            Email
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/DylanWinkleman" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/>
+            </svg>
+            GitHub
+          </a>
+          <a class="btn btn-ghost" href="https://www.linkedin.com/in/dylan-winkleman-76b45b2a5" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.55V9h3.57v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/>
+            </svg>
+            LinkedIn
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <section id="about" aria-labelledby="about-h">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">About</p>
+          <h2 id="about-h">Professional Summary</h2>
+        </div>
+        <div class="card" style="max-width: 880px;">
+          <p style="margin:0;">
+            Customer-focused technical support professional with hands-on Azure cloud experience across virtual machines,
+            networking, DNS, storage, identity/governance, monitoring, backup, and GitHub Actions deployments. Brings practical
+            troubleshooting, documentation, customer communication, team leadership, inventory coordination, and process-improvement
+            experience from construction and hospitality operations. Seeking a technical support, cloud support, or junior cloud
+            engineering role where documented Azure portfolio projects and service-focused communication can support faster issue resolution.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SKILLS ============ -->
+    <section id="skills" aria-labelledby="skills-h">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Toolbox</p>
+          <h2 id="skills-h">Technical Skills</h2>
+          <p class="lead">Grouped by focus area, reinforced through documented hands-on Azure portfolio projects.</p>
+        </div>
+
+        <div class="grid skills-grid">
+          <div class="card">
+            <h3>
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 .9-8.91 6 6 0 0 0-11.64-1.4A4 4 0 0 0 6 19h11.5Z"/></svg>
+              </span>
+              Cloud
+            </h3>
+            <ul class="chips">
+              <li>Microsoft Azure</li><li>Virtual Machines</li><li>VNets</li><li>Subnets</li><li>NSGs</li>
+              <li>Public IPs</li><li>Azure DNS</li><li>Static Web Apps</li><li>Storage Accounts</li>
+              <li>Blob Storage</li><li>Resource Groups</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>
+              </span>
+              Identity, Security &amp; Governance
+            </h3>
+            <ul class="chips">
+              <li>Entra ID</li><li>Users / Groups</li><li>RBAC</li><li>Custom Roles</li><li>Azure Policy</li>
+              <li>Management Groups</li><li>Tagging</li><li>Private Containers</li><li>SAS Tokens</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 6 4-12 2 6h6"/></svg>
+              </span>
+              Monitoring &amp; Operations
+            </h3>
+            <ul class="chips">
+              <li>Azure Monitor</li><li>Log Analytics</li><li>KQL basics</li><li>Metric Alerts</li><li>Action Groups</li>
+              <li>Network Watcher</li><li>Azure Backup</li><li>Recovery Services Vaults</li>
+              <li>Azure Monitor Agent</li><li>Data Collection Rules</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>
+              </span>
+              DevOps &amp; Tools
+            </h3>
+            <ul class="chips">
+              <li>Git</li><li>GitHub</li><li>GitHub Actions</li><li>CI/CD basics</li><li>Azure CLI</li>
+              <li>Cloud Shell</li><li>RDP</li><li>JSON</li><li>Docker basics</li>
+              <li>Technical Documentation</li><li>Troubleshooting</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              Professional Strengths
+            </h3>
+            <ul class="chips">
+              <li>Customer Support</li><li>Face-to-face Communication</li><li>Conflict Resolution</li>
+              <li>Coaching</li><li>Inventory Coordination</li><li>Team Leadership</li><li>Process Improvement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CERTIFICATIONS ============ -->
+    <section id="certifications" aria-labelledby="cert-h">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Credentials</p>
+          <h2 id="cert-h">Certifications</h2>
+        </div>
+
+        <div class="grid cert-grid">
+          <div class="card cert">
+            <span class="seal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"/></svg>
+            </span>
+            <div>
+              <h3>Microsoft Certified: Azure Fundamentals (AZ-900)<span class="status done">Certified</span></h3>
+              <p>Foundational certification covering core Azure services, cloud concepts, security, governance, and pricing.</p>
+            </div>
+          </div>
+
+          <div class="card cert">
+            <span class="seal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"/></svg>
+            </span>
+            <div>
+              <h3>Microsoft Azure Administrator (AZ-104)<span class="status prog">In progress</span></h3>
+              <p>All five AZ-104 domains reinforced through hands-on Azure portfolio projects.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROJECTS ============ -->
+    <section id="projects" aria-labelledby="proj-h">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Portfolio</p>
+          <h2 id="proj-h">Projects</h2>
+          <p class="lead">Hands-on Azure labs documented end-to-end on GitHub — each repository includes setup notes and screenshots.</p>
+        </div>
+
+        <div class="grid projects-grid">
+          <!-- Project 1 -->
+          <article class="card project">
+            <span class="tag">Monitoring &amp; Incident Response</span>
+            <h3>Azure Monitoring &amp; Incident Response Project</h3>
+            <ul>
+              <li>Built an Azure monitoring environment for an Ubuntu VM using Azure Monitor metrics, Log Analytics, KQL, CPU metric alerts, email action groups, Network Watcher diagnostics, and Azure Backup.</li>
+              <li>Troubleshot a real agent failure on Ubuntu 24.04 by replacing the deprecated Log Analytics agent with Azure Monitor Agent deployed through a Data Collection Rule.</li>
+            </ul>
+            <div class="links">
+              <a class="repo-link" href="https://github.com/DylanWinkleman/azure-monitoring-lab" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+                View repository
+              </a>
+            </div>
+          </article>
+
+          <!-- Project 2 -->
+          <article class="card project">
+            <span class="tag">Identity &amp; Governance</span>
+            <h3>Azure Identity, RBAC &amp; Governance Project</h3>
+            <ul>
+              <li>Provisioned Entra ID users and groups, assigned built-in and custom RBAC roles at scoped resource-group levels, and practiced least-privilege access control.</li>
+              <li>Applied Azure Policy, management groups, and resource tagging to reinforce governance concepts from the AZ-104 identity and governance domain.</li>
+            </ul>
+            <div class="links">
+              <a class="repo-link" href="https://github.com/DylanWinkleman/azure-identity-rbac-lab" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+                View repository
+              </a>
+            </div>
+          </article>
+
+          <!-- Project 3 -->
+          <article class="card project">
+            <span class="tag live">Live · You're looking at it</span>
+            <h3>Azure DNS &amp; Static Website Deployment</h3>
+            <ul>
+              <li>Delegated a custom domain to Azure DNS, configured apex and www records, and deployed a live Azure Static Web App at dylancloudlab.net.</li>
+              <li>Automated deployment through GitHub Actions, connecting GitHub repository changes to Azure Static Web Apps hosting.</li>
+              <li><strong>This very site is the project</strong> — you're looking at it right now.</li>
+            </ul>
+            <div class="links">
+              <a class="repo-link" href="https://github.com/DylanWinkleman/azure-domain-dns-lab" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+                View repository
+              </a>
+              <a class="repo-link" href="https://dylancloudlab.net/" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Live site
+              </a>
+            </div>
+          </article>
+
+          <!-- Project 4 -->
+          <article class="card project">
+            <span class="tag">Networking &amp; Secure Storage</span>
+            <h3>Azure VM Networking &amp; Secure Storage Projects</h3>
+            <ul>
+              <li>Deployed Windows Server VM infrastructure with VNet, subnet, NIC, NSG, Public IP, OS disk, and RDP access controls restricted to a single source IP.</li>
+              <li>Configured private Azure Blob Storage containers and least-privilege SAS access using read-only, IP-restricted, time-limited tokens.</li>
+            </ul>
+            <div class="links">
+              <a class="repo-link" href="https://github.com/DylanWinkleman/azure-vm-networking-lab" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+                Networking lab
+              </a>
+              <a class="repo-link" href="https://github.com/DylanWinkleman/azure-storage-sas-lab" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+                Storage / SAS lab
+              </a>
+            </div>
+          </article>
+
+          <!-- Project: Load Balancer + HA -->
+          <article class="card project">
+            <span class="tag">Load Balancing &amp; High Availability</span>
+            <h3>Azure Load Balancer &amp; High Availability</h3>
+            <ul>
+              <li>Placed two zone-redundant Linux VMs (nginx, no public IPs) behind a Standard Load Balancer with an HTTP health probe and load-balancing rule.</li>
+              <li>Verified even traffic distribution across both backends, then validated failover — with one VM stopped, 15/15 requests served by the survivor with zero downtime.</li>
+              <li>Provisioned outbound for the private subnet with a NAT gateway and automated VM setup with cloud-init.</li>
+            </ul>
+            <div class="links">
+              <a class="repo-link" href="https://github.com/DylanWinkleman/azure-load-balancer-lab" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+                View repository
+              </a>
+            </div>
+          </article>
+
+          <!-- Project 5 -->
+          <article class="card project">
+            <span class="tag">Shopify · Full-stack</span>
+            <h3>Ovision — Shopify GPSR Compliance App</h3>
+            <ul>
+              <li>Building a Shopify embedded app using Remix, Prisma, Shopify Polaris, OAuth, Docker, and a PostgreSQL production target, with cloud deployment planning.</li>
+            </ul>
+            <div class="links">
+              <a class="repo-link" href="https://github.com/DylanWinkleman/OvisionProject" target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+                View repository
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EXPERIENCE ============ -->
+    <section id="experience" aria-labelledby="exp-h">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Career</p>
+          <h2 id="exp-h">Work Experience</h2>
+        </div>
+
+        <ol class="timeline">
+          <li>
+            <div class="job-head">
+              <h3>Talbot Construction</h3>
+              <span class="role">— Carpenter / Contractor</span>
+            </div>
+            <p class="job-meta">2024–Present <span class="sep" aria-hidden="true">•</span> Ladue, MO</p>
+            <ul class="bullets">
+              <li>Advanced from carpenter to contractor with added responsibility for project coordination, customer communication, and issue resolution.</li>
+              <li>Worked directly with customers to understand requirements, communicate progress, and maintain service quality in deadline-driven environments.</li>
+              <li>Helped manage materials and inventory, contributing to strategies that reduced unnecessary capital expenses and improved operational efficiency.</li>
+            </ul>
+          </li>
+          <li>
+            <div class="job-head">
+              <h3>Texas Roadhouse</h3>
+              <span class="role">— Server / Manager</span>
+            </div>
+            <p class="job-meta">2020–Present <span class="sep" aria-hidden="true">•</span> Wentzville, MO / Edwardsville, IL</p>
+            <ul class="bullets">
+              <li>Combined frontline service and management experience in high-volume operations, strengthening customer support, conflict resolution, coaching, and multitasking skills.</li>
+              <li>As part of the Edwardsville management team, helped lead the restaurant to $5M in annual gross sales by designing individualized sales and coaching strategies.</li>
+              <li>Assisted with inventory management and cost-control decisions while maintaining strong customer service and team performance standards.</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ EDUCATION ============ -->
+    <section id="education" aria-labelledby="edu-h">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Background</p>
+          <h2 id="edu-h">Education</h2>
+        </div>
+        <div class="card edu-card" style="max-width: 640px;">
+          <span class="seal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.5 3 6 3s6-2 6-3v-5"/></svg>
+          </span>
+          <div>
+            <h3>Southern Illinois University Edwardsville</h3>
+            <p>Edwardsville, IL · Attended May 2020 – Oct 2022</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer role="contentinfo">
+    <div class="wrap footer-inner">
+      <div class="footer-links">
+        <a href="mailto:winklemandylan09@gmail.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          winklemandylan09@gmail.com
+        </a>
+        <a href="https://github.com/DylanWinkleman" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.94c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.8 1.08.8 2.18v3.23c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+          GitHub
+        </a>
+        <a href="https://www.linkedin.com/in/dylan-winkleman-76b45b2a5" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.55V9h3.57v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/></svg>
+          LinkedIn
+        </a>
+        <a href="./Dylan-Winkleman-Resume.pdf" download>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Résumé (PDF)
+        </a>
+      </div>
+      <p class="copyright">© <span id="year">2026</span> Dylan Winkleman · Built &amp; deployed on <a href="https://dylancloudlab.net/">Azure Static Web Apps</a>.</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // Current year
+      var yEl = document.getElementById("year");
+      if (yEl) { yEl.textContent = new Date().getFullYear(); }
+
+      // Mobile nav toggle
+      var toggle = document.getElementById("navToggle");
+      var links = document.getElementById("navLinks");
+      if (toggle && links) {
+        toggle.addEventListener("click", function () {
+          var open = links.classList.toggle("open");
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        // Close the menu after picking a destination (mobile)
+        links.addEventListener("click", function (e) {
+          if (e.target.closest("a")) {
+            links.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+          }
+        });
+      }
+
+      // Scroll-spy: highlight the active nav link
+      var navAnchors = Array.prototype.slice.call(document.querySelectorAll(".nav-links a"));
+      var sections = navAnchors
+        .map(function (a) {
+          var id = a.getAttribute("href").slice(1);
+          var el = document.getElementById(id);
+          return el ? { id: id, el: el, link: a } : null;
+        })
+        .filter(Boolean);
+
+      if ("IntersectionObserver" in window && sections.length) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              navAnchors.forEach(function (a) { a.classList.remove("active"); });
+              var match = sections.find(function (s) { return s.el === entry.target; });
+              if (match) { match.link.classList.add("active"); }
+            }
+          });
+        }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
+        sections.forEach(function (s) { observer.observe(s.el); });
+      }
+    })();
+  </script>
+</body>
+</html>
