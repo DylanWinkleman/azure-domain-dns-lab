@@ -94,6 +94,18 @@
     section { padding: 64px 0; scroll-margin-top: calc(var(--nav-h) + 16px); }
     section:nth-of-type(even) { background: var(--bg-2); }
 
+    /* ---------- Scroll reveal ---------- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.65, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .reveal.in-view { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+
     .section-head { margin: 0 0 28px; }
     .section-head h2 {
       font-size: clamp(1.45rem, 1rem + 1.8vw, 2rem);
@@ -130,6 +142,11 @@
       backdrop-filter: saturate(140%) blur(10px);
       -webkit-backdrop-filter: saturate(140%) blur(10px);
       border-bottom: 1px solid var(--border);
+      transition: transform 0.35s ease;
+    }
+    .nav.nav-hidden { transform: translateY(-100%); }
+    @media (prefers-reduced-motion: reduce) {
+      .nav { transition: none; }
     }
     .nav .wrap {
       height: 100%;
@@ -216,18 +233,6 @@
         radial-gradient(1100px 520px at 18% -8%, rgba(0,120,212,0.30), transparent 60%),
         radial-gradient(900px 520px at 92% 6%, rgba(34,211,238,0.18), transparent 58%),
         linear-gradient(180deg, var(--bg-2), var(--bg));
-    }
-    .hero::after {
-      /* subtle grid texture */
-      content: "";
-      position: absolute; inset: 0;
-      background-image:
-        linear-gradient(rgba(126,178,235,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(126,178,235,0.05) 1px, transparent 1px);
-      background-size: 44px 44px;
-      mask-image: radial-gradient(circle at 50% 20%, #000 0%, transparent 72%);
-      -webkit-mask-image: radial-gradient(circle at 50% 20%, #000 0%, transparent 72%);
-      pointer-events: none;
     }
     .hero .wrap { position: relative; z-index: 1; }
 
@@ -521,7 +526,6 @@
   <header class="nav" role="banner">
     <div class="wrap">
       <a class="brand" href="#top" aria-label="Dylan Winkleman — home">
-        <img class="logo" src="./favicon.svg" alt="" width="30" height="30" />
         <span class="brand-text">Dylan Winkleman</span>
       </a>
 
@@ -992,6 +996,57 @@
           });
         }, { rootMargin: "-45% 0px -50% 0px", threshold: 0 });
         sections.forEach(function (s) { observer.observe(s.el); });
+      }
+
+      // Auto-hide nav: hide on scroll down, show on scroll up or when the
+      // mouse is near the top edge of the screen.
+      var nav = document.querySelector(".nav");
+      if (nav) {
+        var lastY = window.pageYOffset;
+        var nearTop = false;
+        var navTicking = false;
+
+        function updateNav() {
+          var y = window.pageYOffset;
+          var goingDown = y > lastY;
+          // Keep it shown near the very top of the page, while scrolling up,
+          // when the mobile menu is open, or when the cursor is at the top edge.
+          if (nearTop || !goingDown || y < 80 || links.classList.contains("open")) {
+            nav.classList.remove("nav-hidden");
+          } else if (goingDown && y > nav.offsetHeight) {
+            nav.classList.add("nav-hidden");
+          }
+          lastY = y;
+          navTicking = false;
+        }
+
+        window.addEventListener("scroll", function () {
+          if (!navTicking) {
+            window.requestAnimationFrame(updateNav);
+            navTicking = true;
+          }
+        }, { passive: true });
+
+        window.addEventListener("mousemove", function (e) {
+          nearTop = e.clientY <= 80;
+          if (nearTop) { nav.classList.remove("nav-hidden"); }
+        }, { passive: true });
+      }
+
+      // Scroll reveal: fade/slide sections in as they enter the viewport
+      var prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var revealEls = Array.prototype.slice.call(document.querySelectorAll("main section:not(.hero), footer"));
+      if (!prefersReduced && "IntersectionObserver" in window && revealEls.length) {
+        revealEls.forEach(function (el) { el.classList.add("reveal"); });
+        var revealObserver = new IntersectionObserver(function (entries, obs) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("in-view");
+              obs.unobserve(entry.target);
+            }
+          });
+        }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+        revealEls.forEach(function (el) { revealObserver.observe(el); });
       }
     })();
   </script>
