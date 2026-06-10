@@ -14,9 +14,5 @@ Live site: https://dylancloudlab.net
 GitHub repo → GitHub Actions → Azure Static Web Apps  
 Public DNS hosted in Azure DNS
 
-## How to deploy
-1. Edit files in `/site`
-2. `git add .`
-3. `git commit -m "message"`
-4. `git push`
+
 
