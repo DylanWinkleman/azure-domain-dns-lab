@@ -1,11 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DW monogram">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0078D4"/>
-      <stop offset="1" stop-color="#22D3EE"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="url(#g)"/>
-  <text x="50%" y="50%" dy=".06em" text-anchor="middle" dominant-baseline="middle"
-        font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#ffffff">DW</text>
+  <rect width="64" height="64" rx="8" fill="#111315"/>
+  <path d="M0 50h64v14H0z" fill="#1881c4"/>
+  <path d="M50 0h14v14H50z" fill="#e5a04d"/>
+  <text x="32" y="31" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI, Arial, sans-serif" font-size="27" font-weight="700" fill="#ffffff">DW</text>
 </svg>

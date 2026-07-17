@@ -1,0 +1,4 @@
+Contact: mailto:winklemandylan09@gmail.com
+Canonical: https://www.dylancloudlab.net/.well-known/security.txt
+Expires: 2027-07-10T00:00:00.000Z
+Preferred-Languages: en
