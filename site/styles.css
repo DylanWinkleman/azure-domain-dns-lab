@@ -345,7 +345,13 @@ button {
   height: 100%;
   display: block;
   cursor: default;
+  opacity: 0;
   touch-action: pan-y;
+  transition: opacity 360ms ease;
+}
+
+[data-infra-scene][data-scene-ready="true"] .infra-canvas {
+  opacity: 1;
 }
 
 .infra-canvas[data-hovering="true"] {
@@ -453,8 +459,7 @@ button {
   user-select: none;
 }
 
-.hero::before,
-.journey-intro::before {
+.hero::before {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
@@ -471,7 +476,7 @@ button {
 }
 
 .hero-copy {
-  width: min(620px, 50vw);
+  width: min(540px, calc(50vw - 48px));
   padding-block: 58px;
   pointer-events: auto;
 }
@@ -520,19 +525,12 @@ button {
 }
 
 .hero-statement {
-  max-width: 620px;
+  max-width: 520px;
   margin: 26px 0 0;
   color: var(--white);
   font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
   font-size: 1.9rem;
   line-height: 1.28;
-}
-
-.hero-detail {
-  max-width: 600px;
-  margin: 18px 0 0;
-  color: #ccd1d5;
-  font-size: 1rem;
 }
 
 .hero-actions,
@@ -546,6 +544,62 @@ button {
 
 .hero-actions {
   margin-top: 30px;
+}
+
+.hero-certification {
+  width: min(430px, 100%);
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 8px 11px;
+  border: 1px solid rgba(103, 183, 212, 0.38);
+  border-left: 3px solid var(--blue-light);
+  border-radius: 7px;
+  background: linear-gradient(105deg, rgba(23, 74, 99, 0.52), rgba(13, 17, 19, 0.84) 72%);
+  box-shadow: 0 0 18px rgba(55, 183, 232, 0.1);
+}
+
+.certification-emblem {
+  width: 52px;
+  height: 52px;
+  display: block;
+  object-fit: contain;
+}
+
+.certification-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.certification-label {
+  color: var(--blue-light);
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.certification-copy strong {
+  color: var(--white);
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+.certification-check {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(145, 189, 105, 0.18);
+  color: var(--green);
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 .hero-actions .button {
@@ -580,18 +634,14 @@ button {
   background: #0e6eaa;
 }
 
-@property --project-edge-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
 .button-projects {
-  --project-edge-angle: 0deg;
+  --project-light-x: 82%;
+  --project-light-y: 100%;
+  --project-light-strength: 0.52;
   position: relative;
   isolation: isolate;
-  border-color: rgba(173, 231, 248, 0.32);
-  box-shadow: 0 0 12px rgba(55, 183, 232, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 13px rgba(255, 255, 255, 0.1), 0 0 18px rgba(55, 183, 232, 0.06);
 }
 
 .button-projects::before {
@@ -601,30 +651,30 @@ button {
   inset: -1px;
   padding: 1.5px;
   border-radius: inherit;
-  background: conic-gradient(
-    from var(--project-edge-angle),
-    transparent 0deg 278deg,
-    rgba(92, 208, 247, 0.2) 300deg,
-    #dff8ff 323deg,
-    #64d7ff 338deg,
-    transparent 360deg
+  background: radial-gradient(
+    circle 58px at var(--project-light-x) var(--project-light-y),
+    #ffffff 0,
+    rgba(255, 255, 255, 0.82) 14%,
+    rgba(255, 255, 255, 0.26) 46%,
+    transparent 74%
   );
-  filter: drop-shadow(0 0 3px rgba(100, 215, 255, 0.72));
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.62));
+  opacity: var(--project-light-strength);
   pointer-events: none;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite: exclude;
-  animation: project-edge-trace 4.8s linear infinite;
+  transition: opacity 140ms ease;
 }
 
 .button-projects:hover {
-  box-shadow: 0 0 18px rgba(55, 183, 232, 0.2);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.14), 0 0 20px rgba(55, 183, 232, 0.1);
 }
 
-@keyframes project-edge-trace {
-  to {
-    --project-edge-angle: 360deg;
+@media (hover: hover) and (pointer: fine) and (min-width: 761px) {
+  .button-projects {
+    --project-light-strength: 0;
   }
 }
 
@@ -648,23 +698,6 @@ button {
   font-weight: 700;
 }
 
-.journey-intro {
-  position: relative;
-  min-height: 78svh;
-  display: flex;
-  align-items: center;
-  scroll-margin-top: var(--header-height);
-}
-
-.journey-intro-inner {
-  padding-block: 80px;
-}
-
-.journey-intro-inner > * {
-  width: min(520px, 46vw);
-  pointer-events: auto;
-}
-
 .eyebrow {
   padding-top: 8px;
   color: var(--blue);
@@ -672,41 +705,6 @@ button {
 
 .eyebrow-light {
   color: var(--blue-light);
-}
-
-.journey-intro h2 {
-  margin: 14px 0 20px;
-  font-family: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
-  font-size: 3.35rem;
-  line-height: 1.05;
-  letter-spacing: 0;
-}
-
-.journey-intro p:not(.eyebrow) {
-  color: #c6cdd1;
-  font-size: 1.06rem;
-}
-
-.journey-range {
-  width: min(520px, 46vw);
-  display: grid;
-  grid-template-columns: auto minmax(24px, 1fr) auto minmax(24px, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  margin-top: 34px;
-  color: #d4d9dc;
-  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-}
-
-.journey-range span[aria-hidden="true"] {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.28);
-}
-
-.journey-range strong {
-  color: var(--green);
 }
 
 .journey-step {
@@ -1194,7 +1192,7 @@ button {
 }
 
 .now-layout h2 {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .now-copy p {
@@ -1350,7 +1348,7 @@ button {
 
 @media (max-width: 1080px) {
   .hero-copy {
-    width: min(560px, 52vw);
+    width: min(500px, calc(52vw - 44px));
   }
 
   .hero h1 {
@@ -1380,7 +1378,7 @@ button {
 
 @media (max-width: 900px) {
   .hero-copy {
-    width: min(500px, 56vw);
+    width: min(460px, calc(56vw - 40px));
   }
 
   .hero h1 {
@@ -1389,15 +1387,6 @@ button {
 
   .hero-statement {
     font-size: 1.5rem;
-  }
-
-  .journey-intro-inner > *,
-  .journey-range {
-    width: min(460px, 52vw);
-  }
-
-  .journey-intro h2 {
-    font-size: 2.8rem;
   }
 
   .journey-step-inner {
@@ -1522,8 +1511,7 @@ button {
     white-space: nowrap;
   }
 
-  .hero::before,
-  .journey-intro::before {
+  .hero::before {
     inset: auto 0 0;
     width: 100%;
     height: 62%;
@@ -1558,14 +1546,25 @@ button {
     font-size: 1.35rem;
   }
 
-  .hero-detail {
-    margin-top: 12px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
   .hero-actions {
     margin-top: 20px;
+  }
+
+  .hero-certification {
+    min-height: 60px;
+    grid-template-columns: 46px minmax(0, 1fr) 22px;
+    gap: 9px;
+    margin-top: 14px;
+    padding: 7px 9px;
+  }
+
+  .certification-emblem {
+    width: 46px;
+    height: 46px;
+  }
+
+  .certification-copy strong {
+    font-size: 0.8rem;
   }
 
   .button {
@@ -1578,39 +1577,11 @@ button {
     font-size: 0.82rem;
   }
 
-  .journey-intro {
-    min-height: 100svh;
-    align-items: flex-end;
-  }
-
-  .journey-intro-inner {
-    padding: 0 0 56px;
-  }
-
-  .journey-intro-inner > *,
-  .journey-range {
-    width: 100%;
-  }
-
-  .journey-intro h2 {
-    font-size: 2.4rem;
-  }
-
-  .journey-intro p:not(.eyebrow) {
-    font-size: 0.95rem;
-  }
-
-  .journey-range {
-    gap: 8px;
-    margin-top: 24px;
-    font-size: 0.62rem;
-  }
-
   .journey-step,
   .journey-step-featured {
     min-height: 118svh;
     align-items: flex-start;
-    padding-top: 46svh;
+    padding-top: 58svh;
     padding-bottom: 60px;
   }
 
@@ -1803,10 +1774,6 @@ button {
     align-items: flex-start;
   }
 
-  .journey-intro h2 {
-    font-size: 2.1rem;
-  }
-
   .journey-copy h3 {
     font-size: 1.62rem;
   }
@@ -1833,7 +1800,22 @@ button {
   }
 }
 
+@media (max-width: 760px) and (max-height: 700px) {
+  .scene-mobile-controls {
+    top: 6px;
+    min-height: 38px;
+  }
+
+  .scene-mobile-controls button {
+    height: 38px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .infra-canvas {
+    transition: none;
+  }
+
   html {
     scroll-behavior: auto;
   }
@@ -1857,7 +1839,6 @@ button {
   }
 
   .button-projects::before {
-    --project-edge-angle: 42deg;
-    animation: none;
+    transition: none;
   }
 }

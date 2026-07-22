@@ -11,9 +11,9 @@
 
   <link rel="canonical" href="https://www.dylancloudlab.net/">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=20260715-project-glow2">
-  <script src="./script.js?v=20260714-portfolio1" defer></script>
-  <script type="module" src="./scene.js?v=20260715-cleanup1"></script>
+  <link rel="stylesheet" href="./styles.css?v=20260722-project-light2">
+  <script src="./script.js?v=20260722-project-light3" defer></script>
+  <script src="./scene-loader.js?v=20260721-adaptive-scene3" defer></script>
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Dylan's Cloud Portfolio">
@@ -62,10 +62,10 @@
       </button>
 
       <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation" data-menu>
-        <a href="#work">Work</a>
+        <a href="#project-vm">Work</a>
         <a href="#now">Now</a>
-        <a href="#toolkit">Toolkit</a>
         <a href="#story">Story</a>
+        <a href="#toolkit">Toolkit</a>
         <a class="nav-contact" href="mailto:winklemandylan09@gmail.com">Contact</a>
       </nav>
     </div>
@@ -105,30 +105,23 @@
           <div class="shell hero-inner">
             <div class="hero-copy">
               <p class="kicker"><span class="status-dot" aria-hidden="true"></span> St. Louis area &middot; Open to cloud support roles</p>
-              <h1 id="hero-title">Dylan Winkleman</h1>
-              <p class="hero-statement">I build cloud systems, document what breaks, and turn the fixes into repeatable infrastructure.</p>
-              <p class="hero-detail">Hands-on Azure infrastructure, operations, and secure deployment work grounded in practical troubleshooting and clear communication.</p>
+              <h1 id="hero-title">Welcome</h1>
+              <p class="hero-statement">Explore the Azure projects, lessons, and hands-on work behind my cloud journey.</p>
 
               <div class="hero-actions">
-                <a class="button button-primary button-projects" href="#work">Explore the projects <span aria-hidden="true">&rarr;</span></a>
+                <a class="button button-primary button-projects" href="#project-vm">Explore the projects <span aria-hidden="true">&rarr;</span></a>
                 <a class="button button-secondary" href="mailto:winklemandylan09@gmail.com">Start a conversation</a>
                 <a class="resume-link" href="./Dylan-Winkleman-Resume.pdf" download>Resume</a>
               </div>
-            </div>
-          </div>
-        </section>
 
-        <section class="journey-intro" id="work" aria-labelledby="work-title">
-          <div class="shell journey-intro-inner">
-            <p class="eyebrow eyebrow-light">Project evolution</p>
-            <h2 id="work-title">Built one problem at a time.</h2>
-            <p>The work starts with a secured virtual machine and ends with a reusable Terraform network. Each project added a new part of Azure instead of pretending the whole platform arrived at once.</p>
-            <div class="journey-range" aria-label="Eight projects from January to June 2026">
-              <span>Jan 2026</span>
-              <span aria-hidden="true"></span>
-              <strong>08 builds</strong>
-              <span aria-hidden="true"></span>
-              <span>Jun 2026</span>
+              <div class="hero-certification" aria-label="Microsoft Certified: Azure Fundamentals, AZ-900">
+                <img class="certification-emblem" src="https://learn.microsoft.com/en-us/media/learn/certification/badges/microsoft-certified-fundamentals-badge.svg" alt="" width="52" height="52" aria-hidden="true">
+                <span class="certification-copy">
+                  <span class="certification-label">Microsoft Certified</span>
+                  <strong>Azure Fundamentals</strong>
+                </span>
+                <span class="certification-check" aria-hidden="true">&#10003;</span>
+              </div>
             </div>
           </div>
         </section>
@@ -136,7 +129,7 @@
         <article class="journey-step" id="project-vm" data-journey-project="vm" aria-labelledby="project-vm-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>01</span> January 2026 &middot; Compute + security</p>
+              <p class="journey-meta"><span>01</span> Compute + security</p>
               <h3 id="project-vm-title">A Windows VM with a tighter edge.</h3>
               <p>I started with the pieces around one Windows Server VM: VNet, NIC, NSG, public IP, and managed disk. The useful lesson was not the VM itself; it was narrowing RDP to one trusted source instead of leaving the service open to the internet.</p>
               <p class="journey-result"><span>Project outcome</span> Core Azure networking and a concrete security boundary.</p>
@@ -148,7 +141,7 @@
         <article class="journey-step" id="project-storage" data-journey-project="storage" aria-labelledby="project-storage-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>02</span> January 2026 &middot; Storage + access</p>
+              <p class="journey-meta"><span>02</span> Storage + access</p>
               <h3 id="project-storage-title">Private by default, shared on a timer.</h3>
               <p>The next project kept a Blob container private and granted read-only access with a SAS limited by expiration and source IP. It was my first close look at giving someone exactly enough access without handing over the account key.</p>
               <p class="journey-result"><span>Project outcome</span> Scoped access, expiration, and storage security.</p>
@@ -160,7 +153,7 @@
         <article class="journey-step" id="project-dns" data-journey-project="dns" aria-labelledby="project-dns-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>03</span> February 2026 &middot; DNS + delivery</p>
+              <p class="journey-meta"><span>03</span> DNS + delivery</p>
               <h3 id="project-dns-title">A portfolio deployed as infrastructure.</h3>
               <p>This site became the delivery layer: custom DNS in Azure, apex and www records, HTTPS through Azure Static Web Apps, and a GitHub Actions workflow that publishes changes from source control.</p>
               <p class="journey-result"><span>Project outcome</span> A public endpoint, automated delivery, and a place to show the work.</p>
@@ -172,7 +165,7 @@
         <article class="journey-step" id="project-ovision" data-journey-project="ovision" aria-labelledby="project-ovision-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>04</span> March 2026 &middot; Application delivery</p>
+              <p class="journey-meta"><span>04</span> Application delivery</p>
               <h3 id="project-ovision-title">A production-shaped application.</h3>
               <p>Ovision pushed beyond infrastructure into a Shopify embedded app using Remix, Prisma, Polaris, OAuth, Docker, and PostgreSQL. It made the infrastructure work more concrete because an application now depended on the deployment choices.</p>
               <p class="journey-result"><span>Project outcome</span> Application concerns, authentication, containers, and data persistence.</p>
@@ -184,7 +177,7 @@
         <article class="journey-step" id="project-identity" data-journey-project="identity" aria-labelledby="project-identity-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>05</span> May 2026 &middot; Identity + governance</p>
+              <p class="journey-meta"><span>05</span> Identity + governance</p>
               <h3 id="project-identity-title">Least privilege with boundaries.</h3>
               <p>I worked through Entra ID users and groups, scoped built-in and custom RBAC roles, Azure Policy, management groups, and resource tags. The goal was to understand who can change what, and where that authority stops.</p>
               <p class="journey-result"><span>Project outcome</span> Identity scope, policy enforcement, and governance.</p>
@@ -196,7 +189,7 @@
         <article class="journey-step" id="project-monitoring" data-journey-project="monitoring" aria-labelledby="project-monitoring-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>06</span> June 2026 &middot; Operations</p>
+              <p class="journey-meta"><span>06</span> Operations</p>
               <h3 id="project-monitoring-title">Making an unhealthy signal useful.</h3>
               <p>This project tied together Azure Monitor, Log Analytics, KQL, metric alerts, action groups, Network Watcher, and Azure Backup. It also included the less tidy work of replacing the retired Log Analytics agent with Azure Monitor Agent.</p>
               <p class="journey-result"><span>Project outcome</span> Detection, investigation, alert routing, and recovery.</p>
@@ -208,7 +201,7 @@
         <article class="journey-step" id="project-load-balancer" data-journey-project="load-balancer" aria-labelledby="project-load-balancer-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>07</span> June 2026 &middot; Availability</p>
+              <p class="journey-meta"><span>07</span> Availability</p>
               <h3 id="project-load-balancer-title">Two backends, one healthy service.</h3>
               <p>Two zone-redundant Linux VMs sit behind a Standard Load Balancer with health probes, NAT Gateway egress, and cloud-init provisioning. I tested traffic distribution and then stopped a backend to confirm that the site stayed available.</p>
               <p class="journey-result"><span>Project outcome</span> Health-aware routing, outbound design, and tested failover.</p>
@@ -220,7 +213,7 @@
         <article class="journey-step journey-step-featured" id="project-terraform" data-journey-project="terraform" aria-labelledby="project-terraform-title">
           <div class="shell journey-step-inner">
             <div class="journey-copy">
-              <p class="journey-meta"><span>08</span> June 2026 &middot; Infrastructure as Code</p>
+              <p class="journey-meta"><span>08</span> Infrastructure as Code</p>
               <h3 id="project-terraform-title">A segmented Azure network, now repeatable.</h3>
               <p>The newest build turns the earlier networking lessons into reusable Terraform modules: a secured hub, two isolated spokes, Azure Firewall, Bastion, forced routing, and private workload VMs. A 32-resource plan makes the full change visible before deployment.</p>
               <p class="journey-result"><span>Where the work is now</span> Reusable modules, centralized inspection, and deployment from code.</p>
@@ -248,8 +241,8 @@
           <strong>AZ-104 and Azure operations</strong>
         </div>
         <div>
-          <span class="status-label">Working method</span>
-          <strong>Build, test, document, improve</strong>
+          <span class="status-label">Learning next</span>
+          <strong>Scripting, automation, and deeper Azure architecture</strong>
         </div>
         <div>
           <span class="status-label">Latest build</span>
@@ -335,7 +328,6 @@
     <section class="section section-dark" id="now" aria-labelledby="now-title">
       <div class="shell now-layout">
         <header>
-          <p class="eyebrow eyebrow-light">In progress</p>
           <h2 id="now-title">What I am working on now.</h2>
         </header>
 
@@ -361,10 +353,28 @@
       </div>
     </section>
 
+    <section class="section story-section" id="story" aria-labelledby="story-title">
+      <div class="shell story-layout">
+        <header>
+          <p class="eyebrow">How I got here</p>
+          <h2 id="story-title">I did not start in tech.</h2>
+        </header>
+
+        <div class="story-copy">
+          <p>I spent years in restaurants and construction before I got serious about cloud work. Those jobs taught me how to handle problems in real time, talk with people when things are not going smoothly, and keep moving when the plan changes.</p>
+          <p>When I started learning Azure, I found that I liked tracing a problem until it finally made sense. One question kept leading to another: networking opened the door to identity, monitoring, automation, and the systems connecting them.</p>
+          <p>Azure was the starting point, but that curiosity keeps pulling me toward new tools, platforms, and advances across technology. These projects are where I turn questions into working systems, troubleshoot the gaps, and document what I learned.</p>
+        </div>
+
+        <blockquote>
+          <p>I learn best when I can build it, break it, and figure out what I missed.</p>
+        </blockquote>
+      </div>
+    </section>
+
     <section class="section" id="toolkit" aria-labelledby="toolkit-title">
       <div class="shell">
         <header class="section-heading">
-          <p class="eyebrow">Toolkit</p>
           <div>
             <h2 id="toolkit-title">The tools behind the work.</h2>
             <p>A practical stack built through deployment, troubleshooting, and documentation rather than a list of disconnected keywords.</p>
@@ -389,24 +399,6 @@
             <p>Git, GitHub, GitHub Actions, Azure CLI, Cloud Shell, Docker fundamentals, JSON, technical writing, and repeatable runbooks.</p>
           </article>
         </div>
-      </div>
-    </section>
-
-    <section class="section story-section" id="story" aria-labelledby="story-title">
-      <div class="shell story-layout">
-        <header>
-          <p class="eyebrow">How I got here</p>
-          <h2 id="story-title">I did not start in tech.</h2>
-        </header>
-
-        <div class="story-copy">
-          <p>I spent years in restaurants and construction before I got serious about cloud work. Those jobs taught me how to handle problems in real time, talk with people when things are not going smoothly, and keep moving when the plan changes.</p>
-          <p>When I started learning Azure, I found that I liked tracing a problem until it finally made sense. I am still building experience, so these projects are where I turn new concepts into working systems, troubleshoot the gaps, and write down what I learned.</p>
-        </div>
-
-        <blockquote>
-          <p>I learn best when I can build it, break it, and figure out what I missed.</p>
-        </blockquote>
       </div>
     </section>
 
@@ -440,7 +432,7 @@
       </div>
     </div>
     <div class="image-viewer-viewport" data-image-viewer-viewport>
-      <img data-image-viewer-image src="./assets/terraform-hub-spoke-plan.png" alt="Enlarged VS Code view of the Terraform hub-and-spoke modules and 32-resource plan" width="1936" height="1056" decoding="async">
+      <img data-image-viewer-image data-image-viewer-src="./assets/terraform-hub-spoke-plan.png" alt="Enlarged VS Code view of the Terraform hub-and-spoke modules and 32-resource plan" width="1936" height="1056" decoding="async">
     </div>
   </dialog>
 

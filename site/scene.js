@@ -23,6 +23,9 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
   var statusDescription = sceneRoot.querySelector("[data-scene-description]");
   var mobileTitle = sceneRoot.querySelector("[data-scene-mobile-title]");
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if ("scrollRestoration" in window.history) {
+    window.history.scrollRestoration = "manual";
+  }
   var TERRAFORM_PURPLE = 0xa067da;
   var TERRAFORM_DEEP_PURPLE = 0x853ec3;
 
@@ -102,6 +105,7 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
   ];
 
   var ROUTE_PHASE_END = 0.4;
+  var HERO_HANDOFF_START = 0.58;
   var COMPLETION_RING_RADIUS = 1.2;
   var COMPLETION_RING_TUBE_RADIUS = 0.025;
   var ROUTE_MARKER_RADIUS = 0.075;
@@ -736,7 +740,7 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     var completionTrackMaterial = basicMaterial(0x536068, 0.42, false);
     completionTrackMaterial.depthTest = false;
     var completionTrack = new THREE.Mesh(completionGeometry.clone(), completionTrackMaterial);
-    completionTrack.frustumCulled = false;
+    completionTrack.frustumCulled = true;
     completionTrack.renderOrder = 30;
     entry.group.add(completionTrack);
     entry.completionTrack = completionTrack;
@@ -745,7 +749,7 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     var completionMaterial = basicMaterial(project.color, 0.96, false);
     completionMaterial.depthTest = false;
     var completionRing = new THREE.Mesh(completionGeometry, completionMaterial);
-    completionRing.frustumCulled = false;
+    completionRing.frustumCulled = true;
     completionRing.renderOrder = 40;
     entry.group.add(completionRing);
     entry.completionRing = completionRing;
@@ -785,6 +789,7 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
       new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
     );
     clickTarget.userData.projectId = project.id;
+    clickTarget.visible = false;
     entry.group.add(clickTarget);
     clickTargets.push(clickTarget);
     scene.add(entry.group);
@@ -813,7 +818,6 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     height: 1,
     targetProgress: 0,
     progress: 0,
-    markerProgress: 0,
     activeIndex: -1,
     lastActiveIndex: null,
     hoveredId: null,
@@ -823,8 +827,13 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     pointerDownY: 0,
     pointerDownId: null,
     visible: true,
-    stageCenters: []
+    stageCenters: [],
+    lastInteractionTime: performance.now()
   };
+
+  function markSceneActive() {
+    state.lastInteractionTime = performance.now();
+  }
 
   var centerSnap = {
     active: false,
@@ -850,7 +859,49 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
   var lookGoal = new THREE.Vector3();
   var lookTarget = new THREE.Vector3(-1.8, 0, 0);
   var lastFrameTime = 0;
+  var nextFrameTime = 0;
   var elapsedTime = 0;
+  var deviceMemory = Number(navigator.deviceMemory || 0);
+  var hardwareConcurrency = Number(navigator.hardwareConcurrency || 0);
+  var constrainedDevice = (deviceMemory > 0 && deviceMemory <= 4)
+    || (hardwareConcurrency > 0 && hardwareConcurrency <= 4);
+  var targetFrameInterval = constrainedDevice ? 33.33 : 16.67;
+  var averageRenderCost = 0;
+  var slowRenderStreak = 0;
+  var fastRenderStreak = 0;
+
+  function updateFramePacing(renderCost) {
+    averageRenderCost = averageRenderCost
+      ? THREE.MathUtils.lerp(averageRenderCost, renderCost, 0.12)
+      : renderCost;
+
+    if (targetFrameInterval < 20) {
+      if (averageRenderCost > 8.5) {
+        slowRenderStreak += 1;
+      } else {
+        slowRenderStreak = Math.max(0, slowRenderStreak - 1);
+      }
+      if (slowRenderStreak >= 8) {
+        targetFrameInterval = 33.33;
+        slowRenderStreak = 0;
+        fastRenderStreak = 0;
+      }
+      return;
+    }
+
+    if (constrainedDevice) {
+      return;
+    }
+    if (averageRenderCost < 5.5) {
+      fastRenderStreak += 1;
+    } else {
+      fastRenderStreak = 0;
+    }
+    if (fastRenderStreak >= 90) {
+      targetFrameInterval = 16.67;
+      fastRenderStreak = 0;
+    }
+  }
 
   function setStageLocation(stageIndex) {
     var projectId = stageIndex > 0 ? projects[stageIndex - 1].id : "origin";
@@ -992,6 +1043,7 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
   }
 
   function handleJourneyScroll() {
+    markSceneActive();
     updateScrollState();
     var currentScrollY = window.scrollY;
     if (!centerSnap.active && Math.abs(currentScrollY - centerSnap.lastScrollY) > 0.5) {
@@ -1016,9 +1068,16 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
       return;
     }
     var rect = target.getBoundingClientRect();
-    var targetTop = projectId === "origin"
-      ? 0
-      : rect.top + window.scrollY - (window.innerHeight - rect.height) * 0.5;
+    var mobileProject = projectId !== "origin" && window.innerWidth < 760;
+    var targetTop;
+    if (projectId === "origin") {
+      targetTop = 0;
+    } else if (mobileProject) {
+      var projectPaddingTop = parseFloat(window.getComputedStyle(target).paddingTop) || 0;
+      targetTop = rect.top + window.scrollY + projectPaddingTop - window.innerHeight * 0.51;
+    } else {
+      targetTop = rect.top + window.scrollY - (window.innerHeight - rect.height) * 0.5;
+    }
     window.history.replaceState(null, "", projectId === "origin" ? "#top" : "#project-" + projectId);
     if (immediate) {
       var previousScrollBehavior = document.documentElement.style.scrollBehavior;
@@ -1057,9 +1116,15 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
 
   function updateStageCenters() {
     var elements = [originElement].concat(projects.map(function (project) { return project.element; }));
+    var mobile = window.innerWidth < 760;
     state.stageCenters = elements.map(function (element) {
       var rect = element.getBoundingClientRect();
-      return rect.top + window.scrollY + rect.height * 0.5;
+      var centerOffset = rect.height * 0.5;
+      if (mobile && element !== originElement) {
+        var paddingTop = parseFloat(window.getComputedStyle(element).paddingTop) || 0;
+        centerOffset = Math.min(centerOffset, paddingTop + window.innerHeight * 0.01);
+      }
+      return rect.top + window.scrollY + centerOffset;
     });
   }
 
@@ -1089,13 +1154,18 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
       }
     }
 
-    state.targetProgress = THREE.MathUtils.clamp(
-      (segment + segmentProgress) / (centers.length - 1),
-      0,
-      1
-    );
+    var animationSegment = segment + segmentProgress;
+    if (segment === 0) {
+      animationSegment = THREE.MathUtils.clamp(
+        (segmentProgress - HERO_HANDOFF_START) / (1 - HERO_HANDOFF_START),
+        0,
+        1
+      );
+    }
+    state.targetProgress = THREE.MathUtils.clamp(animationSegment / projects.length, 0, 1);
 
-    var nearestStage = segmentProgress < 0.5 ? segment : segment + 1;
+    var stageHandoff = segment === 0 ? HERO_HANDOFF_START : 0.5;
+    var nearestStage = segmentProgress < stageHandoff ? segment : segment + 1;
     state.activeIndex = THREE.MathUtils.clamp(nearestStage - 1, -1, projects.length - 1);
     if (state.activeIndex !== state.lastActiveIndex) {
       updateStatus(state.activeIndex);
@@ -1147,6 +1217,7 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
   }
 
   sceneCanvas.addEventListener("pointermove", function (event) {
+    markSceneActive();
     updatePointer(event);
   });
 
@@ -1181,7 +1252,7 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     state.width = Math.max(1, Math.round(rect.width));
     state.height = Math.max(1, Math.round(rect.height));
     var mobile = state.width < 760;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.65));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1 : 1.65));
     renderer.setSize(state.width, state.height, false);
     camera.aspect = state.width / state.height;
     camera.fov = mobile ? 52 : 44;
@@ -1263,17 +1334,6 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
   function buildCompletionFor(index, progress) {
     var stageProgress = progress * projects.length - index;
     return smoothProgress((stageProgress - ROUTE_PHASE_END) / (1 - ROUTE_PHASE_END));
-  }
-
-  function markerProgressFor(progress) {
-    var scaled = THREE.MathUtils.clamp(progress, 0, 1) * projects.length;
-    if (scaled >= projects.length) {
-      return 1;
-    }
-    var segment = Math.floor(scaled);
-    var local = scaled - segment;
-    var travel = smoothProgress(local / ROUTE_PHASE_END);
-    return (segment + travel) / projects.length;
   }
 
   function applyProjectBuild(entry, completion, elapsed) {
@@ -1477,7 +1537,15 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     var completion = buildCompletionFor(index, state.progress);
     entry.revealed = revealed;
     entry.completion = completion;
-    entry.visual.visible = past || completion > 0.001;
+    var mobile = state.width < 760;
+    var renderDistance = mobile ? 13.5 : 20;
+    var withinRenderRange = entry.project.positionVector.distanceToSquared(camera.position) <= renderDistance * renderDistance;
+    entry.group.visible = withinRenderRange && (past || completion > 0.001);
+    entry.visual.visible = entry.group.visible;
+
+    if (!withinRenderRange) {
+      return;
+    }
 
     var settled = completion >= 0.985;
     var targetScale = revealed ? (hovered && !settled ? 1.04 : 1) : 0.001;
@@ -1509,10 +1577,6 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
       ? 0
       : active ? 0.96 : hovered ? 0.72 : past ? 0.2 : 0.48;
     applyProjectBuild(entry, completion, elapsed);
-    if (entry.project.element) {
-      entry.project.element.dataset.buildProgress = completion.toFixed(2);
-      entry.project.element.dataset.emblemVisible = entry.visual.visible ? "true" : "false";
-    }
 
     entry.materials.forEach(function (material) {
       var baseOpacity = material.userData.baseOpacity == null ? 1 : material.userData.baseOpacity;
@@ -1559,8 +1623,6 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
         .copy(activeRoute.startColor)
         .lerp(activeRoute.endColor, travelProgress);
       orbitMarker.visible = false;
-      sceneRoot.dataset.markerMode = "route";
-      sceneRoot.dataset.markerProject = entry.project.id;
       return;
     }
 
@@ -1582,8 +1644,6 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     orbitMarker.scale.setScalar(Math.max(0.001, mergeProgress));
     orbitMarker.material.opacity = 0.98 * mergeProgress;
     orbitMarker.material.color.setHex(entry.project.color);
-    sceneRoot.dataset.markerMode = journeyComplete ? "complete" : "orbit";
-    sceneRoot.dataset.markerProject = entry.project.id;
   }
 
   function updateRouteSegments(progress) {
@@ -1615,9 +1675,6 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     state.progress = reducedMotion
       ? state.targetProgress
       : THREE.MathUtils.damp(state.progress, state.targetProgress, 3.6, safeDelta);
-    state.markerProgress = markerProgressFor(state.progress);
-    sceneRoot.dataset.cameraProgress = state.progress.toFixed(3);
-    sceneRoot.dataset.markerProgress = state.markerProgress.toFixed(3);
 
     cameraCurve.getPointAt(state.progress, routePosition);
     var mobile = state.width < 760;
@@ -1646,33 +1703,47 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     updateRouteSegments(state.progress);
     updateProgressMarkers(state.progress);
 
-    var activeEntry = state.activeIndex >= 0 ? entries[state.activeIndex] : null;
-    sceneRoot.dataset.activeBuildProgress = activeEntry ? activeEntry.completion.toFixed(2) : "0.00";
-
     stars.position.x = routePosition.x * 0.04;
     stars.position.z = routePosition.z * 0.02;
     stars.rotation.y += delta * 0.003;
 
-    scene.updateMatrixWorld(true);
-    camera.updateMatrixWorld(true);
-    updateRaycast();
-    updateLabels();
     renderer.render(scene, camera);
-
-    var visibleCount = entries.filter(function (entry) { return entry.revealed; }).length;
-    sceneRoot.dataset.visibleNodes = String(visibleCount);
+    if (!mobile) {
+      updateRaycast();
+      updateLabels();
+    }
   }
 
   function animate(frameTime) {
-    if (lastFrameTime && frameTime - lastFrameTime < 24) {
+    if (!state.visible) {
       return;
     }
+
+    var progressSettled = Math.abs(state.targetProgress - state.progress) < 0.0004;
+    var recentlyActive = frameTime - state.lastInteractionTime < 650;
+    var heroMotionVisible = state.progress < 0.012;
+
+    if (progressSettled && !recentlyActive && !heroMotionVisible) {
+      return;
+    }
+
+    if (!nextFrameTime) {
+      nextFrameTime = frameTime;
+    }
+    if (frameTime + 0.25 < nextFrameTime) {
+      return;
+    }
+    if (frameTime - nextFrameTime > targetFrameInterval * 2) {
+      nextFrameTime = frameTime;
+    }
+    nextFrameTime += targetFrameInterval;
+
     var delta = lastFrameTime ? Math.min((frameTime - lastFrameTime) / 1000, 0.05) : 0.016;
     lastFrameTime = frameTime;
     elapsedTime += delta;
-    if (state.visible) {
-      renderScene(delta);
-    }
+    var renderStarted = performance.now();
+    renderScene(delta);
+    updateFramePacing(performance.now() - renderStarted);
   }
 
   var resizeObserver = new ResizeObserver(resizeScene);
@@ -1693,13 +1764,21 @@ function startProjectJourney(sceneRoot, sceneCanvas) {
     updateScrollState();
   });
 
+  var sceneIntersecting = true;
   var visibilityObserver = new IntersectionObserver(function (entriesList) {
-    state.visible = entriesList[0].isIntersecting;
+    sceneIntersecting = entriesList[0].isIntersecting;
+    state.visible = sceneIntersecting && document.visibilityState === "visible";
+    if (state.visible) {
+      markSceneActive();
+    }
   }, { threshold: 0.01 });
   visibilityObserver.observe(sceneRoot);
 
   document.addEventListener("visibilitychange", function () {
-    state.visible = document.visibilityState === "visible";
+    state.visible = sceneIntersecting && document.visibilityState === "visible";
+    if (state.visible) {
+      markSceneActive();
+    }
   });
 
   updateStageCenters();

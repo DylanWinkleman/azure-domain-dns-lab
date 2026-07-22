@@ -17,9 +17,83 @@
   var imageZoomOut = document.querySelector("[data-image-zoom-out]");
   var imageZoomReset = document.querySelector("[data-image-zoom-reset]");
   var imageZoomStatus = document.querySelector("[data-image-zoom-status]");
+  var projectButton = document.querySelector(".button-projects");
+  var projectLightRegion = projectButton ? projectButton.closest(".hero-copy") : null;
+
+  function setDatasetValue(element, key, value) {
+    if (element && element.dataset[key] !== value) {
+      element.dataset[key] = value;
+    }
+  }
 
   if (year) {
     year.textContent = String(new Date().getFullYear());
+  }
+
+  if (projectButton && projectLightRegion && typeof window.matchMedia === "function") {
+    var finePointer = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 761px)");
+    var projectLightFrame = 0;
+    var projectPointerX = 0;
+    var projectPointerY = 0;
+    var projectButtonBounds = null;
+
+    function paintProjectLight() {
+      projectLightFrame = 0;
+
+      if (!finePointer.matches) {
+        projectButton.style.removeProperty("--project-light-x");
+        projectButton.style.removeProperty("--project-light-y");
+        projectButton.style.removeProperty("--project-light-strength");
+        return;
+      }
+
+      var buttonBounds = projectButtonBounds || projectButton.getBoundingClientRect();
+      projectButtonBounds = buttonBounds;
+      var distanceX = Math.max(buttonBounds.left - projectPointerX, 0, projectPointerX - buttonBounds.right);
+      var distanceY = Math.max(buttonBounds.top - projectPointerY, 0, projectPointerY - buttonBounds.bottom);
+      var distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+      var strength = Math.max(0, Math.min(1, 1 - distance / 145));
+
+      projectButton.style.setProperty("--project-light-x", (projectPointerX - buttonBounds.left).toFixed(1) + "px");
+      projectButton.style.setProperty("--project-light-y", (projectPointerY - buttonBounds.top).toFixed(1) + "px");
+      projectButton.style.setProperty("--project-light-strength", strength.toFixed(3));
+    }
+
+    function requestProjectLight(event) {
+      if (!finePointer.matches || event.pointerType === "touch") {
+        return;
+      }
+
+      projectPointerX = event.clientX;
+      projectPointerY = event.clientY;
+      if (!projectLightFrame) {
+        projectLightFrame = window.requestAnimationFrame(paintProjectLight);
+      }
+    }
+
+    function clearProjectLight() {
+      if (projectLightFrame) {
+        window.cancelAnimationFrame(projectLightFrame);
+        projectLightFrame = 0;
+      }
+      if (finePointer.matches) {
+        projectButton.style.setProperty("--project-light-strength", "0");
+      }
+      projectButtonBounds = null;
+    }
+
+    projectLightRegion.addEventListener("pointerenter", function () {
+      projectButtonBounds = projectButton.getBoundingClientRect();
+    }, { passive: true });
+    projectLightRegion.addEventListener("pointermove", requestProjectLight, { passive: true });
+    projectLightRegion.addEventListener("pointerleave", clearProjectLight, { passive: true });
+    window.addEventListener("scroll", function () {
+      projectButtonBounds = null;
+    }, { passive: true });
+    window.addEventListener("resize", function () {
+      projectButtonBounds = null;
+    });
+    finePointer.addEventListener("change", clearProjectLight);
   }
 
   function closeMenu() {
@@ -39,7 +113,7 @@
       menuToggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
       document.body.classList.toggle("menu-open", !isOpen);
       if (!isOpen && header) {
-        header.dataset.hidden = "false";
+        setDatasetValue(header, "hidden", "false");
       }
     });
 
@@ -63,18 +137,19 @@
   }
 
   if (header) {
-    var lastHeaderScrollY = Math.max(0, window.scrollY);
+    var lastHeaderScrollY = 0;
     var headerTravel = 0;
     var headerDirection = 0;
     var headerFrameRequested = false;
+    var headerInitialized = false;
 
     function updateHeader() {
       var currentScrollY = Math.max(0, window.scrollY);
-      var scrollDelta = currentScrollY - lastHeaderScrollY;
+      var scrollDelta = headerInitialized ? currentScrollY - lastHeaderScrollY : 0;
       var direction = scrollDelta > 0.5 ? 1 : scrollDelta < -0.5 ? -1 : 0;
       var menuOpen = menu && menu.dataset.open === "true";
 
-      header.dataset.scrolled = currentScrollY > 12 ? "true" : "false";
+      setDatasetValue(header, "scrolled", currentScrollY > 12 ? "true" : "false");
 
       if (direction && direction !== headerDirection) {
         headerTravel = 0;
@@ -83,12 +158,13 @@
       headerTravel += Math.abs(scrollDelta);
 
       if (currentScrollY <= 80 || menuOpen || header.matches(":focus-within") || direction < 0) {
-        header.dataset.hidden = "false";
+        setDatasetValue(header, "hidden", "false");
       } else if (direction > 0 && headerTravel >= 12) {
-        header.dataset.hidden = "true";
+        setDatasetValue(header, "hidden", "true");
       }
 
       lastHeaderScrollY = currentScrollY;
+      headerInitialized = true;
       headerFrameRequested = false;
     }
 
@@ -100,9 +176,9 @@
       window.requestAnimationFrame(updateHeader);
     }
 
-    updateHeader();
+    requestHeaderUpdate();
     header.addEventListener("focusin", function () {
-      header.dataset.hidden = "false";
+      setDatasetValue(header, "hidden", "false");
     });
     window.addEventListener("scroll", requestHeaderUpdate, { passive: true });
     window.addEventListener("pageshow", requestHeaderUpdate);
@@ -150,6 +226,26 @@
   ) {
     var imageZoom = 1;
 
+    function loadImageViewerImage() {
+      if (imageViewerImage.getAttribute("src")) {
+        return;
+      }
+
+      var deferredSource = imageViewerImage.dataset.imageViewerSrc;
+      if (!deferredSource) {
+        return;
+      }
+
+      imageViewerViewport.setAttribute("aria-busy", "true");
+      imageViewerImage.addEventListener("load", function () {
+        imageViewerViewport.removeAttribute("aria-busy");
+      }, { once: true });
+      imageViewerImage.addEventListener("error", function () {
+        imageViewerViewport.removeAttribute("aria-busy");
+      }, { once: true });
+      imageViewerImage.src = deferredSource;
+    }
+
     function setImageZoom(nextZoom, preserveCenter) {
       var previousWidth = Math.max(imageViewerViewport.scrollWidth, 1);
       var previousHeight = Math.max(imageViewerViewport.scrollHeight, 1);
@@ -175,6 +271,7 @@
     }
 
     function openImageViewer() {
+      loadImageViewerImage();
       if (typeof imageViewer.showModal === "function") {
         if (!imageViewer.open) {
           imageViewer.showModal();
